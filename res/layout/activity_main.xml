@@ -15,7 +15,7 @@
         android:layout_alignParentTop="true"        
         android:layout_alignParentLeft="true"
         android:ems="15"
-        android:maxLines="5"
+        android:maxLines="3"
         android:inputType="textMultiLine" 
         android:hint="@string/note"
         >
@@ -46,5 +46,17 @@
         android:layout_alignLeft="@+id/statusTxt"
         android:ems="10"
         android:hint="Find picture of..." />
+
+    <ImageView
+        android:id="@+id/pictureView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/pictureTxt"
+        android:layout_below="@+id/pictureTxt"
+        android:layout_marginLeft="36dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_launcher"
+        android:scaleType="fitXY"
+        android:contentDescription="obrazek" />
 
 </RelativeLayout>

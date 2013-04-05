@@ -1,5 +1,6 @@
 package itu.dk.masterthesis.smartdoor_remote;
 
+import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -187,10 +188,11 @@ public class ViewThumbnailsActivity extends Activity {
 				//startActivity(intent);
 				//Object o = this.getListAdapter().getItem(position);
 			      //String picture = pi.thumbnail.toString();
-				
-			      Intent returnIntent = new Intent();
-			      //Bundle b = new Bundle();
-			      returnIntent.putExtra("selectedPicture",pi.thumbnail);
+				ByteArrayOutputStream stream = new ByteArrayOutputStream();
+				pi.thumbnail.compress(Bitmap.CompressFormat.PNG, 100, stream);
+				byte[] byteArray = stream.toByteArray();			      
+				Intent returnIntent = new Intent();			      
+			      returnIntent.putExtra("selectedPicture",byteArray);
 			      setResult(RESULT_OK,returnIntent);        
 			      finish();
 			}

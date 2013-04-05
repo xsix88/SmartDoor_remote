@@ -2,12 +2,15 @@ package itu.dk.masterthesis.smartdoor_remote;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -19,6 +22,7 @@ public class MainActivity extends Activity {
 	private Button statusButton;
 	private Button pictureButton;
 	private EditText pictureTxt;
+	private ImageView pictureView;
 	
 	
 
@@ -78,7 +82,12 @@ public class MainActivity extends Activity {
 	    if (requestCode == GET_PICTURE) {
 	        // Make sure the request was successful
 	        if (resultCode == RESULT_OK) {
-	        	//data
+	        	//Bundle pictureB = data.getExtras();	        	
+	        	//Bitmap pic = (Bitmap) pictureB.get("selectedPicture");
+	        	byte[] byteArray = data.getByteArrayExtra("selectedPicture");
+	        	Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+	        	pictureView = (ImageView) findViewById(R.id.pictureView);
+	        	pictureView.setImageBitmap(bmp);
 	            // The user picked a contact.
 	            // The Intent's data Uri identifies which contact was selected.
 
