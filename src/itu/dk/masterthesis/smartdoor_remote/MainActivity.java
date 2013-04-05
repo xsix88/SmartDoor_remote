@@ -1,5 +1,7 @@
 package itu.dk.masterthesis.smartdoor_remote;
 
+import java.io.ByteArrayOutputStream;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -17,14 +19,16 @@ public class MainActivity extends Activity {
 	
 	public static final String EXTRA_SEARCHTEXT = "extraSearch";
 	public static final int GET_PICTURE = 13;
+	public static final String STATUS = "status";
+	public static final String PICTURE = "picture";
 	
 	private EditText statusTxt;
 	private Button statusButton;
 	private Button pictureButton;
 	private EditText pictureTxt;
-	private ImageView pictureView;
+	private ImageView pictureView;	
 	
-	
+	public static Bitmap bitmap = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,8 @@ public class MainActivity extends Activity {
 		pictureTxt = (EditText) findViewById(R.id.pictureTxt);
 		statusButton = (Button) findViewById(R.id.statusB);
 		pictureButton = (Button) findViewById(R.id.pictureB);
+		pictureView = (ImageView) findViewById(R.id.pictureView);
+		pictureView.setDrawingCacheEnabled(true);
 		
 		statusButton.setOnClickListener(new OnClickListener() {
 
@@ -43,6 +49,8 @@ public class MainActivity extends Activity {
 				if (statusTxt.getText().length() > 0) {					
 					//updateStatus();
 					statusTxt.setText("");
+					pictureTxt.setText("");
+					pictureView.setImageBitmap(null);
 				} else {
 					displayToast("Enter new status.");
 				}
@@ -56,7 +64,6 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				if (pictureTxt.getText().length() > 0) {					
 					updatePicture();
-					statusTxt.setText("");
 				} else {
 					displayToast("Enter text to search for a picture.");
 				}
@@ -82,16 +89,10 @@ public class MainActivity extends Activity {
 	    if (requestCode == GET_PICTURE) {
 	        // Make sure the request was successful
 	        if (resultCode == RESULT_OK) {
-	        	//Bundle pictureB = data.getExtras();	        	
-	        	//Bitmap pic = (Bitmap) pictureB.get("selectedPicture");
 	        	byte[] byteArray = data.getByteArrayExtra("selectedPicture");
-	        	Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-	        	pictureView = (ImageView) findViewById(R.id.pictureView);
+	        	Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);	
+	        	bitmap = bmp;
 	        	pictureView.setImageBitmap(bmp);
-	            // The user picked a contact.
-	            // The Intent's data Uri identifies which contact was selected.
-
-	            // Do something with the contact here (bigger example below)
 	        }
 	    }
 	}
@@ -99,6 +100,19 @@ public class MainActivity extends Activity {
 	
 	private void displayToast(String txt) {
 		Toast.makeText(this, txt, Toast.LENGTH_SHORT).show();
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putString(STATUS, statusTxt.getText().toString());
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		statusTxt.setText(savedInstanceState.getString(STATUS));
+		if (bitmap!=null){
+    	pictureView.setImageBitmap(bitmap); }
+		
 	}
 
 	@Override
