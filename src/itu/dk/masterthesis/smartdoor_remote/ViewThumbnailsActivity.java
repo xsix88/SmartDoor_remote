@@ -1,6 +1,5 @@
 package itu.dk.masterthesis.smartdoor_remote;
 
-import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -18,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView.ScaleType;
 import android.widget.TableLayout;
@@ -35,14 +35,20 @@ public class ViewThumbnailsActivity extends Activity {
 	public static final String EXTRA_PHOTO_URI = "photo_uri";
 	public static final String EXTRA_PHOTO_PAGE_URI = "page_uri";
 
+	int page = 1;
+	
 	class PhotoInfo {
 		Photo photo;
 		Bitmap thumbnail;
 	}
 
+	
+	
+	
+	
 	class SearchAsyncTask extends
 			AsyncTask<SearchParameters, PhotoInfo, List<PhotoInfo>> {
-		@SuppressWarnings({ "deprecation" })
+		@SuppressWarnings({ "deprecation", "unused" })
 		@Override
 		protected List<PhotoInfo> doInBackground(SearchParameters... params) {
 			SearchParameters q = params[0];
@@ -51,7 +57,7 @@ public class ViewThumbnailsActivity extends Activity {
 			List<Photo> photos = null;
 			try {
 				// search the photos..this method will take some time
-				photos = f.getPhotosInterface().search(q, 20, 1);
+				photos = f.getPhotosInterface().search(q, 20, page);
 			} catch (Exception e) {
 				Log.e("SearchAsyncTask", "can't search photos", e);
 			} finally {
@@ -65,6 +71,7 @@ public class ViewThumbnailsActivity extends Activity {
 
 			List<PhotoInfo> out = new ArrayList<PhotoInfo>();
 			Bitmap bitmap;
+			 
 			for (Photo p : photos) {
 				try {
 					// get the thumbnail url and download it in a Bitmap object
@@ -88,7 +95,7 @@ public class ViewThumbnailsActivity extends Activity {
 					out.add(pi);
 				}
 			}
-
+			
 			return out;
 		}
 
@@ -97,6 +104,9 @@ public class ViewThumbnailsActivity extends Activity {
 		protected void onPreExecute() {
 			// while search, show a dialog with infinite progress
 			showDialog(DIALOG_INFINITE_PROGRESS);
+			// disable load more button
+			Button loadMoreButton = (Button) findViewById(R.id.MoreButton);
+			loadMoreButton.setEnabled(false);
 		}
 
 		@Override
@@ -111,7 +121,11 @@ public class ViewThumbnailsActivity extends Activity {
 				// I guess show some dialog to the user
 				Toast.makeText(ViewThumbnailsActivity.this,
 						"Sorry, an error occurred!", Toast.LENGTH_SHORT).show();
-			}
+			} else {
+				Button loadMoreButton = (Button) findViewById(R.id.MoreButton);
+				loadMoreButton.setEnabled(true);
+				page++;
+			}			
 		}
 	}
 
@@ -130,7 +144,7 @@ public class ViewThumbnailsActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(R.layout.activity_view_thumbnails);
-
+		
 		table = (TableLayout) findViewById(R.id.ThumbsTableLayout);
 		setupSizes();
 
@@ -146,6 +160,20 @@ public class ViewThumbnailsActivity extends Activity {
 
 		// start the SearchAsyncTask
 		new SearchAsyncTask().execute(searchParameters);
+	}
+
+	public void loadMore(View v) {
+		// get the intent that started the activity
+		Intent startIntent = getIntent();
+		// and then the string the user inputted
+		String searchText = startIntent
+				.getStringExtra(MainActivity.EXTRA_SEARCHTEXT);
+		// configure the search object
+		SearchParameters searchParameters = new SearchParameters();
+		searchParameters.setText(searchText);
+		// start the SearchAsyncTask
+		new SearchAsyncTask().execute(searchParameters);
+
 	}
 
 	private void setupSizes() {

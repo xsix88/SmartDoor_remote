@@ -44,6 +44,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/pictureB"
         android:layout_alignLeft="@+id/statusTxt"
+        android:maxLength="20"
+        android:singleLine="true"
         android:ems="10"
         android:hint="Find picture of..." />
 
@@ -51,12 +53,10 @@
         android:id="@+id/pictureView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/pictureTxt"
         android:layout_below="@+id/pictureTxt"
-        android:layout_marginLeft="36dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/ic_launcher"
-        android:scaleType="fitXY"
-        android:contentDescription="obrazek" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:contentDescription="obrazek"
+        android:scaleType="fitXY" />
 
 </RelativeLayout>

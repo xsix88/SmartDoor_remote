@@ -8,5 +8,6 @@
     <string name="note">Insert text to update the status...</string>
     <string name="title_activity_view_thumbnails">ViewThumbnailsActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="more">More photos...</string>
 
 </resources>

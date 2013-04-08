@@ -2,12 +2,15 @@ package itu.dk.masterthesis.smartdoor_remote;
 
 import java.io.ByteArrayOutputStream;
 
+import com.gmail.yuyang226.flickr.photos.Photo;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 public class Picture {
 	
 	public Bitmap bitmap;
+	public Photo photo;
 	
 	public Picture (Bitmap b) {
 		super();
