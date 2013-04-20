@@ -1,20 +1,25 @@
 package itu.dk.masterthesis.smartdoor_remote;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,6 +30,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
+	static final int DIALOG_INFINITE_PROGRESS = 0;
 	public static final String EXTRA_SEARCHTEXT = "extraSearch";
 	public static final int GET_PICTURE = 13;
 	public static final String STATUS = "status";
@@ -37,6 +43,8 @@ public class MainActivity extends Activity {
 	private ImageView pictureView;
 
 	public static Bitmap bitmap = null;
+	
+	public Context context;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,22 +57,52 @@ public class MainActivity extends Activity {
 		pictureButton = (Button) findViewById(R.id.pictureB);
 		pictureView = (ImageView) findViewById(R.id.pictureView);
 		pictureView.setDrawingCacheEnabled(true);
+		
+		context = this;
 
 		statusButton.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				if (statusTxt.getText().length() > 0) {
-					UpdateStatus us = new UpdateStatus();
-					us.start();
-					statusTxt.setText("");
-					pictureTxt.setText("");
-					pictureView.setImageBitmap(null);
+					if (bitmap!=null){	
+						UpdateStatusAT us = new UpdateStatusAT();
+						us.execute();
+					} else {
+						AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+						builder.setTitle("Updating status");
+						builder.setMessage("Do you want to update status without picture?");
+
+						builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+						    public void onClick(DialogInterface dialog, int which) {
+						    	UpdateStatusAT us = new UpdateStatusAT();
+								us.execute();
+						        dialog.dismiss();
+						    }
+
+						});
+
+						builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+						    @Override
+						    public void onClick(DialogInterface dialog, int which) {
+						        // I do not need any action here you might
+						        dialog.dismiss();
+						    }
+						});
+
+						builder.create();
+						builder.show();
+						
+					}
 				} else {
 					displayToast("Enter new status.");
 				}
 
 			}
+
+			
 		});
 
 		pictureButton.setOnClickListener(new OnClickListener() {
@@ -93,35 +131,108 @@ public class MainActivity extends Activity {
 
 		});
 	}
+	
+//	class UpdateStatus implements Runnable {
+//		public void run() {
+//			try {
+//			// TODO Auto-generated method stub
+//			// Jesper IP: 192.168.1.154
+//			InetAddress serverAddress = InetAddress.getByName("192.168.1.154");
+//			int serverPort = 7896;
+//			String status = statusTxt.getText().toString();
+//			Log.i("status", status);
+//			Socket socket = new Socket(serverAddress, serverPort);
+//			OutputStream os = socket.getOutputStream();
+//				// could have gotten an InputStream as well
+//			DataOutputStream dos = new DataOutputStream(os);
+//			dos.writeUTF(status);
+//				//dos.write(status.getBytes());
+//			dos.flush();
+//			if (bitmap != null) {
+//				Picture p = new Picture(bitmap);
+//				Log.i("picture", bitmap.toString());
+//				byte[] picture = p.getByteArray();
+//				dos.write(picture);
+//			}
+//			dos.flush();
+//				//InputStream is = socket.getInputStream();
+//				//DataInputStream dis = new DataInputStream(is);
+//				//displayToast(dis.readUTF());
+//			socket.close();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//			statusTxt.setText("");
+//			pictureTxt.setText("");
+//			pictureView.setImageBitmap(null);
+//			bitmap=null;
+//		}
+//	}
+	
+	class UpdateStatusAT extends AsyncTask<Void, Integer, Void>{
 
-	class UpdateStatus extends Thread {
-		public void run() {
-			// TODO Auto-generated method stub
-			int serverPort = 7896;
-			String status = statusTxt.getText().toString();
-			Socket socket;
+		@Override
+		protected Void doInBackground(Void... params) {
 			try {
-				InetAddress serverAddress = InetAddress.getByName("localhost");
-				socket = new Socket(serverAddress, serverPort);
+				// TODO Auto-generated method stub
+				// Jesper IP: 192.168.1.154
+				InetAddress serverAddress = InetAddress.getByName("10.27.226.233");
+				int serverPort = 7896;
+				String status = statusTxt.getText().toString();
+				Log.i("status", status);
+				Socket socket = new Socket(serverAddress, serverPort);
 				OutputStream os = socket.getOutputStream();
-				// could have gotten an InputStream as well
+					// could have gotten an InputStream as well
 				DataOutputStream dos = new DataOutputStream(os);
 				dos.writeUTF(status);
+					//dos.write(status.getBytes());
+				dos.flush();
 				if (bitmap != null) {
 					Picture p = new Picture(bitmap);
+					Log.i("picture", bitmap.toString());
 					byte[] picture = p.getByteArray();
 					dos.write(picture);
 				}
 				dos.flush();
-				InputStream is = socket.getInputStream();
-				DataInputStream dis = new DataInputStream(is);
-				displayToast(dis.readUTF());
+					//InputStream is = socket.getInputStream();
+					//DataInputStream dis = new DataInputStream(is);
+					//displayToast(dis.readUTF());
 				socket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
+				} catch (IOException e) {
+					e.printStackTrace();
+				}  finally {
+					// dismiss the dialog
+					dismissDialog(DIALOG_INFINITE_PROGRESS);
+				}
+			return null;
 		}
+		
+		@SuppressWarnings("deprecation")
+		@Override
+		protected void onPreExecute() {
+			// while search, show a dialog with infinite progress
+			showDialog(DIALOG_INFINITE_PROGRESS);
+			// disable load more button
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			statusTxt.setText("");
+			pictureTxt.setText("");
+			pictureView.setImageBitmap(null);
+			bitmap=null;
+		}
+		
+	}
+	
+	@Override
+	protected Dialog onCreateDialog(int id) {
+
+		if (DIALOG_INFINITE_PROGRESS == id) {
+			return ProgressDialog.show(this, "",
+					"Updating status, please wait...", true);
+		}
+		return super.onCreateDialog(id);
 	}
 
 	private void updatePicture() {
