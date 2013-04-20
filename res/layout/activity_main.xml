@@ -8,20 +8,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <EditText
-        android:id="@+id/statusTxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"        
-        android:layout_alignParentLeft="true"
-        android:ems="15"
-        android:maxLines="3"
-        android:inputType="textMultiLine" 
-        android:hint="@string/note"
-        >
-        <requestFocus />
-        </EditText>
-
     <Button
         android:id="@+id/statusB"
         android:layout_width="wrap_content"
@@ -29,25 +15,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:text="@string/statusB" />
-
-    <Button
-        android:id="@+id/pictureB"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="90dp"
-        android:layout_alignParentRight="true"
-        android:text="@string/pictureB" />
-
-    <EditText
-        android:id="@+id/pictureTxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/pictureB"
-        android:layout_alignLeft="@+id/statusTxt"
-        android:maxLength="20"
-        android:singleLine="true"
-        android:ems="10"
-        android:hint="Find picture of..." />
 
     <ImageView
         android:id="@+id/pictureView"
@@ -58,5 +25,48 @@
         android:layout_marginTop="20dp"
         android:contentDescription="obrazek"
         android:scaleType="fitXY" />
+
+    <Button
+        android:id="@+id/pictureB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/statusTxt"
+        android:layout_below="@+id/statusTxt"
+        android:layout_marginTop="63dp"
+        android:text="@string/pictureB" />
+
+    <EditText
+        android:id="@+id/pictureTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/pictureB"
+        android:layout_alignLeft="@+id/statusTxt"
+        android:ems="10"
+        android:hint="Find picture of..."
+        android:maxLength="20"
+        android:singleLine="true" />
+
+    <EditText
+        android:id="@+id/statusTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/statusSpinner"
+        android:layout_alignTop="@+id/statusSpinner"
+        android:layout_marginTop="46dp"
+        android:ems="15"
+        android:hint="@string/note"
+        android:inputType="textMultiLine"
+        android:maxLines="3" >
+
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/selectB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/statusTxt"
+        android:layout_alignParentTop="true"
+        android:text="@string/select" />
 
 </RelativeLayout>

@@ -5,9 +5,10 @@
     <string name="action_settings">Settings</string>
     <string name="statusB">Update Status</string>
     <string name="pictureB">GO</string>
-    <string name="note">Insert text to update the status...</string>
+    <string name="note">...insert text to update the status.</string>
     <string name="title_activity_view_thumbnails">ViewThumbnailsActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="more">More photos...</string>
+    <string name="select">Select status from the list or...</string>
 
 </resources>
