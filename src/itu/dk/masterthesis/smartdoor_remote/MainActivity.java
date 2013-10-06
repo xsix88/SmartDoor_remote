@@ -1,10 +1,5 @@
 package itu.dk.masterthesis.smartdoor_remote;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,13 +7,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,6 +37,9 @@ public class MainActivity extends Activity {
 	private ImageView pictureView;
 	public static Bitmap bitmap = null;
 	public Context context;
+	DBadapter adapter;
+	Cursor status;
+	BitmapFactory.Options options = new BitmapFactory.Options();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,22 +52,44 @@ public class MainActivity extends Activity {
 		pictureButton = (Button) findViewById(R.id.pictureB);
 		pictureView = (ImageView) findViewById(R.id.pictureView);
 		pictureView.setDrawingCacheEnabled(true);
+		
+		adapter = new DBadapter(this);
+		adapter.open();
+		
+		adapter.syncDefaultsFromServer();
+		
 		context = this;
 		selectB.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final CharSequence[] items = { "Gone for lunch",
-						"Will be back in 5 min", "Will be back in 30 min",
-						"Went home, will be back tomorrow" };
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						MainActivity.this);
+				final CharSequence[] items = new CharSequence[adapter.getNumberOfStatics()];
+				status = adapter.getStatic(adapter.getNumberOfStatics()+"");
+				if(status.getCount() > 0) {
+					int i = 0;
+					if (status.moveToFirst()){
+						do {
+						   String text = status.getString(status.getColumnIndex("status"));
+						   items[i] = text;
+						   i++;
+						   }
+						while(status.moveToNext());
+					}
+					status.close();
+				}
+				//final CharSequence[] items = {"Status 1", "Status 2","Status 3", "Status 4", "Status 5"};
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 				builder.setTitle("Select Status");
 				builder.setItems(items, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int item) {
 						statusTxt.setText(items[item]);
-					}
+						byte[] pic = adapter.getStaticPic(items[item]+"");
+						bitmap = BitmapFactory.decodeByteArray(pic, 0, pic.length, options);
+						Picture p = new Picture(bitmap);
+						pictureView.setImageBitmap(p.getPicture());
+						}
 				});
 				builder.show();
+				System.gc();
 			}
 		});
 		statusButton.setOnClickListener(new OnClickListener() {
@@ -80,31 +100,7 @@ public class MainActivity extends Activity {
 						UpdateStatusAT us = new UpdateStatusAT();
 						us.execute();
 					} else {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								context);
-						builder.setTitle("Updating status");
-						builder.setMessage("Do you want to update status without picture?");
-						builder.setPositiveButton("YES",
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int which) {
-										UpdateStatusAT us = new UpdateStatusAT();
-										us.execute();
-										dialog.dismiss();
-									}
-								});
-						builder.setNegativeButton("NO",
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										// I do not need any action here you
-										// might
-										dialog.dismiss();
-									}
-								});
-						builder.create();
-						builder.show();
+						displayToast("Include a picture.");
 					}
 				} else {
 					displayToast("Enter new status.");
@@ -136,30 +132,8 @@ public class MainActivity extends Activity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				// TODO Auto-generated method stub
-				// Jesper IP: 192.168.1.154
-				InetAddress serverAddress = InetAddress.getByName("192.168.1.154");
-				// ITU IP: 10.27.226.233
-				//InetAddress serverAddress = InetAddress.getByName("10.27.226.233");
-				int serverPort = 7896;
-				String status = statusTxt.getText().toString();
-				Log.i("status", status);
-				Socket socket = new Socket(serverAddress, serverPort);
-				OutputStream os = socket.getOutputStream();
-				// could have gotten an InputStream as well
-				DataOutputStream dos = new DataOutputStream(os);
-				dos.writeUTF(status);
-				dos.flush();
-				if (bitmap != null) {
-					Picture p = new Picture(bitmap);
-					Log.i("picture", bitmap.toString());
-					byte[] picture = p.getByteArray();
-					dos.write(picture);
-				}
-				dos.flush();
-				socket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+				Picture p = new Picture(bitmap);
+				adapter.saveStatus(p.getByteArray(), statusTxt.getText().toString());
 			} finally {
 				// dismiss the dialog
 				dismissDialog(DIALOG_INFINITE_PROGRESS);
