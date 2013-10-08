@@ -14,6 +14,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -39,6 +40,7 @@ public class MainActivity extends Activity {
 	public Context context;
 	DBadapter adapter;
 	Cursor status;
+	byte[] byteArray;
 	BitmapFactory.Options options = new BitmapFactory.Options();
 
 	@Override
@@ -52,11 +54,16 @@ public class MainActivity extends Activity {
 		pictureButton = (Button) findViewById(R.id.pictureB);
 		pictureView = (ImageView) findViewById(R.id.pictureView);
 		pictureView.setDrawingCacheEnabled(true);
+		byteArray = null;
 		
 		adapter = new DBadapter(this);
 		adapter.open();
 		
-		adapter.syncDefaultsFromServer();
+		if(adapter.getNumberOfStatics() > 0) {
+
+		} else {
+			adapter.syncDefaultsFromServer();
+		}
 		
 		context = this;
 		selectB.setOnClickListener(new OnClickListener() {
@@ -83,7 +90,9 @@ public class MainActivity extends Activity {
 					public void onClick(DialogInterface dialog, int item) {
 						statusTxt.setText(items[item]);
 						byte[] pic = adapter.getStaticPic(items[item]+"");
+						byteArray = pic;
 						bitmap = BitmapFactory.decodeByteArray(pic, 0, pic.length, options);
+						bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), 200, true);
 						Picture p = new Picture(bitmap);
 						pictureView.setImageBitmap(p.getPicture());
 						}
@@ -132,8 +141,7 @@ public class MainActivity extends Activity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				Picture p = new Picture(bitmap);
-				adapter.saveStatus(p.getByteArray(), statusTxt.getText().toString());
+				adapter.saveStatus(byteArray, statusTxt.getText().toString());
 			} finally {
 				// dismiss the dialog
 				dismissDialog(DIALOG_INFINITE_PROGRESS);
@@ -185,6 +193,7 @@ public class MainActivity extends Activity {
 			// Make sure the request was successful
 			if (resultCode == RESULT_OK) {
 				byte[] byteArray = data.getByteArrayExtra("selectedPicture");
+				this.byteArray = byteArray;
 				Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0,
 						byteArray.length);
 				bitmap = bmp;

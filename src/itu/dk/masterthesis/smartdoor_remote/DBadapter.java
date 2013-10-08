@@ -39,7 +39,6 @@ public class DBadapter {
 	}
 	
 	public void syncDefaultsFromServer() {
-		clearStatics();
 		int cmd = 1;
 		new AsyncRest(context, cmd).execute("http://jsnas.dyndns.org/SmartDoorRestAPI/defaults/index.php?owner_id=1");
 	}
@@ -81,7 +80,7 @@ public class DBadapter {
 	public void saveStatus(byte[] picture, String status) {
 		Date myDate = new Date();
 	    long timeMilliseconds = myDate.getTime();
-        count = (int)Math.random()*100;
+        count = (int)(Math.random()*100000);
 		DBadapter.picture = picture;
 		DBadapter.status = status;
 		DBadapter.datetime = timeMilliseconds;
@@ -96,7 +95,7 @@ public class DBadapter {
 		nCount.close();
 		return pic;
 	}
-	public void clearStatics() {
+	public static void clearStatics() {
 		db.execSQL("DELETE FROM statics");
 	}
 }
@@ -130,6 +129,7 @@ class AsyncRest extends AsyncTask<String, Void, String> {
             		} else {*/
             		//URL url = new URL("http://jsnas.dyndns.org/SmartDoorRestAPI/defaults/index.php?owner_id=1");
         			JSONArray json = rest.doGet(url+"");
+        			DBadapter.clearStatics();
         			for(int i = 0; i < json.length(); i++){
         		        JSONObject c = json.getJSONObject(i);
         		        byteArray = Base64.decode(c.getString("picture"), 0);
